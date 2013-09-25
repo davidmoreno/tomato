@@ -41,6 +41,11 @@ namespace ORM{
 	
 sqlite3 *db=NULL;
 
+const char* nullToEmpty( char const* s){
+	return (s ? s : "");
+}
+
+
 class ResultSetSqlite : public ResultSet{
 	sqlite3_stmt *ppStmt;
 	bool _atend;
@@ -70,25 +75,28 @@ public:
 				case 0:
 					break;
 				case 1:
-					r.set((const char *)sqlite3_column_text(ppStmt, 0));
+					r.set(nullToEmpty((const char *)sqlite3_column_text(ppStmt, 0)));
 					break;
 				case 2:
-					r.set((const char *)sqlite3_column_text(ppStmt, 0),(const char *)sqlite3_column_text(ppStmt, 1));
+					r.set(nullToEmpty((const char *)sqlite3_column_text(ppStmt, 0)),nullToEmpty((const char *)sqlite3_column_text(ppStmt, 1)));
 					break;
 				case 3:
-					r.set((const char *)sqlite3_column_text(ppStmt, 0),(const char *)sqlite3_column_text(ppStmt, 1),(const char *)sqlite3_column_text(ppStmt, 2));
+					r.set(nullToEmpty((const char *)sqlite3_column_text(ppStmt, 0)),nullToEmpty((const char *)sqlite3_column_text(ppStmt, 1)),
+								nullToEmpty((const char *)sqlite3_column_text(ppStmt, 2)));
 					break;
 				case 4:
-					r.set((const char *)sqlite3_column_text(ppStmt, 0),(const char *)sqlite3_column_text(ppStmt, 1),(const char *)sqlite3_column_text(ppStmt, 2),
-						(const char *)sqlite3_column_text(ppStmt, 3));
+					r.set(nullToEmpty((const char *)sqlite3_column_text(ppStmt, 0)),nullToEmpty((const char *)sqlite3_column_text(ppStmt, 1)),
+								nullToEmpty((const char *)sqlite3_column_text(ppStmt, 2)),nullToEmpty((const char *)sqlite3_column_text(ppStmt, 3)));
 					break;
 				case 5:
-					r.set((const char *)sqlite3_column_text(ppStmt, 0),(const char *)sqlite3_column_text(ppStmt, 1),(const char *)sqlite3_column_text(ppStmt, 2),
-						(const char *)sqlite3_column_text(ppStmt, 3),(const char *)sqlite3_column_text(ppStmt, 4));
+					r.set(nullToEmpty((const char *)sqlite3_column_text(ppStmt, 0)),nullToEmpty((const char *)sqlite3_column_text(ppStmt, 1)),
+								nullToEmpty((const char *)sqlite3_column_text(ppStmt, 2)),nullToEmpty((const char *)sqlite3_column_text(ppStmt, 3)),
+								nullToEmpty((const char *)sqlite3_column_text(ppStmt, 4)));
 					break;
 				case 6:
-					r.set((const char *)sqlite3_column_text(ppStmt, 0),(const char *)sqlite3_column_text(ppStmt, 1),(const char *)sqlite3_column_text(ppStmt, 2),
-						(const char *)sqlite3_column_text(ppStmt, 3),(const char *)sqlite3_column_text(ppStmt, 4),(const char *)sqlite3_column_text(ppStmt, 5));
+					r.set(nullToEmpty((const char *)sqlite3_column_text(ppStmt, 0)),nullToEmpty((const char *)sqlite3_column_text(ppStmt, 1)),
+								nullToEmpty((const char *)sqlite3_column_text(ppStmt, 2)),nullToEmpty((const char *)sqlite3_column_text(ppStmt, 3)),
+								nullToEmpty((const char *)sqlite3_column_text(ppStmt, 4)),nullToEmpty((const char *)sqlite3_column_text(ppStmt, 5)));
 					break;
 			default:
 					for (int i=0;i<c;i++){
@@ -126,6 +134,28 @@ ResultSet *sqlite3_resultset(const std::string &query){
 	return new ResultSetSqlite(query);
 }
 
+void sqlite3_one_step_query(const std::string &query, const ORM::fields_and_values &values){
+	sqlite3_stmt *ppStmt=NULL;
+	int rc=sqlite3_prepare_v2(db, query.c_str(),-1, &ppStmt, NULL);
+	if( rc!=SQLITE_OK ){
+		throw(ORM::invalid_query(query));
+	}
+	
+	if (!values.empty()){
+		int n=1;
+		for(auto pair:values){
+			sqlite3_bind_text(ppStmt, n, pair.second.c_str(), pair.second.length(), SQLITE_STATIC);
+			//std::cerr<<"Bind to "<<n<<" "<<pair.second<<std::endl;
+			n++;
+		}
+	}
+
+	rc = sqlite3_step(ppStmt);
+	if (rc!=SQLITE_DONE)
+		throw(ORM::exception(sqlite3_errstr(rc)));
+	sqlite3_free(ppStmt);
+}
+
 void sqlite3_insert(const std::string &table, const ORM::fields_and_values &values){
 	std::stringstream qi, qv;
 	qi<<"INSERT INTO "<<table<<" (id,";
@@ -140,26 +170,8 @@ void sqlite3_insert(const std::string &table, const ORM::fields_and_values &valu
 		}
 	}
 	qi<<") VALUES ( (SELECT MAX(id)+1 FROM "<<table<<"), "<<qv.str()<<")";
-	std::string query=qi.str();
 	
-	//std::cerr<<query<<std::endl;
-	
-	sqlite3_stmt *ppStmt=NULL;
-	int rc=sqlite3_prepare_v2(db, query.c_str(),-1, &ppStmt, NULL);
-	if( rc!=SQLITE_OK ){
-		throw(ORM::invalid_query(query));
-	}
-	
-	n=1;
-	for(auto pair:values){
-		sqlite3_bind_text(ppStmt, n, pair.second.c_str(), pair.second.length(), SQLITE_STATIC);
-		//std::cerr<<"Bind to "<<n<<" "<<pair.second<<std::endl;
-		n++;
-	}
-
-	rc = sqlite3_step(ppStmt);
-	if (rc!=SQLITE_DONE)
-		throw(ORM::exception(sqlite3_errstr(rc)));
+	sqlite3_one_step_query(qi.str(), values);
 }
 
 
@@ -179,25 +191,14 @@ void sqlite3_update(const std::string &table, int id, const ORM::fields_and_valu
 	qi<<" WHERE id = "<<id;
 	std::string query=qi.str();
 	
-	std::cerr<<query<<std::endl;
-	
-	sqlite3_stmt *ppStmt=NULL;
-	int rc=sqlite3_prepare_v2(db, query.c_str(),-1, &ppStmt, NULL);
-	if( rc!=SQLITE_OK ){
-		throw(ORM::invalid_query(query));
-	}
-	
-	n=1;
-	for(auto pair:values){
-		sqlite3_bind_text(ppStmt, n, pair.second.c_str(), pair.second.length(), SQLITE_STATIC);
-		std::cerr<<"Bind to "<<n<<" "<<pair.second<<std::endl;
-		n++;
-	}
-
-	rc = sqlite3_step(ppStmt);
-	if (rc!=SQLITE_DONE)
-		throw(ORM::exception(sqlite3_errstr(rc)));
+	sqlite3_one_step_query(qi.str(), values);
 }
 
+void sqlite3_delete(const std::string &table, int id){
+	std::stringstream qi;
+	qi<<"DELETE FROM "<<table<<" WHERE id = "<<id;
+
+	sqlite3_one_step_query(qi.str(), {});
+}
 
 } // namespace

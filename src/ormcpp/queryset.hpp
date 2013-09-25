@@ -82,6 +82,10 @@ namespace ORM{
 			};
 			
 			bool operator=(const QuerySet<T>::iterator &other) = delete;
+
+			bool operator==(const QuerySet<T>::iterator &other) const{
+				return (other.qa==qa && value==other.value);
+			}
 			
 			bool operator!=(const QuerySet<T>::iterator &other) const{
 				if (other.qa==NULL){
@@ -97,6 +101,10 @@ namespace ORM{
 			
 			T &operator*(){
 				return value;
+			}
+
+			bool atend() const{
+				return qa->atend();
 			}
 		};
 		QuerySet(const std::string &table) : QuerySetBase(table){}
@@ -114,7 +122,14 @@ namespace ORM{
 		
 		T get(const std::string &query, const std::string &value){ // TODO exception if more than one
 			filter(query, value);
-			return *begin();
+			QuerySet<T>::iterator I=begin();
+			if (I.atend())
+				throw(ORM::does_not_exist(query +" = "+value));
+			T ret{*I};
+			++I;
+			if (!I.atend())
+				throw(ORM::not_unique(query +" = "+value));
+			return ret;
 		}
 	};
 }

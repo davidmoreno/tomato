@@ -44,20 +44,23 @@ namespace ORM{
 	void free();
 	void insert(const std::string &table, const fields_and_values &values); 
 	void save(const std::string &table, int id, const fields_and_values &values); 
-
+	void del(const std::string &table, int id);
+	
 	class exception : public std::exception{
 		std::string str;
 	public:
 		exception(const std::string &s) : str(s){}
 		const char *what() const throw(){ return str.c_str(); }
 	};
+
+#define ADD_EXCEPTION(NAME, STR) \
+	class NAME : public exception{ \
+	public: \
+		NAME(const std::string& s) : exception(STR+s) {}; \
+	};
 	
-	class invalid_query : public exception{
-	public:
-		invalid_query(const std::string& s) : exception("invalid query: "+s) {};
-	};
-	class initialization_exception : public exception{ 
-	public:
-		initialization_exception(const std::string& s) : exception("initialization exception: "+s) {};
-	};
+	ADD_EXCEPTION(invalid_query, "invalid query: ");
+	ADD_EXCEPTION(initialization_exception, "initialization exception: ");
+	ADD_EXCEPTION(does_not_exist, "does_not_exist: ");
+	ADD_EXCEPTION(not_unique, "more than one records with that requirements: ");
 };

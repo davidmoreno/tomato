@@ -43,6 +43,7 @@ namespace ORM{
 	void sqlite3_delete();
 	void sqlite3_insert(const std::string &table, const fields_and_values &values);
 	void sqlite3_update(const std::string &table, int id, const fields_and_values &values);
+	void sqlite3_delete(const std::string &table, int id);
 }
 
 using namespace ORM;
@@ -64,4 +65,8 @@ void ORM::insert(const std::string &table, const fields_and_values &values){
 }
 void ORM::save(const std::string &table, int id, const fields_and_values &values){
 	sqlite3_update(table, id, values);
+}
+
+void ORM::del(const std::string &table, int id){
+	sqlite3_delete(table, id);
 }

@@ -61,6 +61,7 @@ public:
 		}
 	};
 	virtual void del(){
+		ORM::del("users", id);
 	}
 };
 

@@ -87,7 +87,8 @@ int main(int argc, char **argv){
 		cout<<"From db "<<u<<endl;
 	}
 	if (command=="del"){
-		auto u=User::objects.filter("id",argv[2]);
+		auto u=User::objects.get("id",argv[2]);
+		cout<<"Delete "<<u<<endl;
 		u.del();
 	}
 	ORM::free();
