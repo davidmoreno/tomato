@@ -163,5 +163,41 @@ void sqlite3_insert(const std::string &table, const ORM::fields_and_values &valu
 }
 
 
+void sqlite3_update(const std::string &table, int id, const ORM::fields_and_values &values){
+	std::stringstream qi, qv;
+	qi<<"UPDATE "<<table<<" SET ";
+	int n=values.size();
+	for (auto pair: values){
+		n--;
+		qi<<pair.first<<"="<<"?";
+		qv<<'?';
+		if (n>0){
+			qi<<", ";
+			qv<<", ";
+		}
+	}
+	qi<<" WHERE id = "<<id;
+	std::string query=qi.str();
 	
+	std::cerr<<query<<std::endl;
+	
+	sqlite3_stmt *ppStmt=NULL;
+	int rc=sqlite3_prepare_v2(db, query.c_str(),-1, &ppStmt, NULL);
+	if( rc!=SQLITE_OK ){
+		throw(ORM::invalid_query(query));
+	}
+	
+	n=1;
+	for(auto pair:values){
+		sqlite3_bind_text(ppStmt, n, pair.second.c_str(), pair.second.length(), SQLITE_STATIC);
+		std::cerr<<"Bind to "<<n<<" "<<pair.second<<std::endl;
+		n++;
+	}
+
+	rc = sqlite3_step(ppStmt);
+	if (rc!=SQLITE_DONE)
+		throw(ORM::exception(sqlite3_errstr(rc)));
+}
+
+
 } // namespace

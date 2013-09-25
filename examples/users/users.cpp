@@ -71,6 +71,21 @@ int main(int argc, char **argv){
 		u=User::objects.get("id", std::to_string(u.id));
 		cout<<"From db "<<u<<endl;
 	}
+	if (command=="edit"){
+		if (argc!=5){
+			cout<<"users edit <id> <username> <password>"<<endl;
+		}
+		User u = User::objects.get("id",argv[2]);
+		cout<<"Original "<<u<<endl;
+		u.username=argv[3];
+		u.password=argv[4];
+		cout<<"Saving "<<u<<endl;
+		u.save();
+		cout<<"Saved "<<u<<endl;
+		
+		u=User::objects.get("id", std::to_string(u.id));
+		cout<<"From db "<<u<<endl;
+	}
 	if (command=="del"){
 		auto u=User::objects.filter("id",argv[2]);
 		u.del();
