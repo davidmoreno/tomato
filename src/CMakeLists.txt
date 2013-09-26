@@ -1,1 +1,1 @@
-add_subdirectory(ormcpp)
+add_subdirectory(tmt)

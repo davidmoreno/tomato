@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 2.8)
 cmake_policy(VERSION 2.8)
-project(libormcpp)
+project(libtmtcpp)
 
 # Some tweak parameters
 SET(SQLITE true CACHE BOOL "Compile with sqlite support")

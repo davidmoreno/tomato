@@ -1,43 +1,29 @@
 /** 
- * (C) 2013 Coralbits SL. <info@coralbits.com>
- * All rights reserved.
+ * (C) 2013 David Moreno & Coralbits SL. <info@coralbits.com>
  * 
- * Under BSD 3 clause license.
+ * https://github.com/davidmoreno/tomato
  * 
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- *     1. Redistributions of source code must retain the above copyright notice, 
- *        this list of conditions and the following disclaimer.
- *     
- *     2. Redistributions in binary form must reproduce the above copyright 
- *        notice, this list of conditions and the following disclaimer in the
- *        documentation and/or other materials provided with the distribution.
+ *    http://www.apache.org/licenses/LICENSE-2.0
  * 
- *     3. Neither the name of Django nor the names of its contributors may be used
- *        to endorse or promote products derived from this software without
- *        specific prior written permission.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
- * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 #include <sqlite3.h>
 #include <string>
 #include <sstream>
 #include <iostream>
 
-#include "orm.hpp"
+#include "tmt.hpp"
 #include "resultset.hpp"
 
-namespace ORM{
+namespace tmt{
 	
 sqlite3 *db=NULL;
 
@@ -54,7 +40,7 @@ public:
 		ppStmt=NULL;
 		int rc=sqlite3_prepare_v2(db, query.c_str(),-1, &ppStmt, NULL);
 		if( rc!=SQLITE_OK ){
-			throw(ORM::invalid_query(query));
+			throw(tmt::invalid_query(query));
 		}
 
 	}
@@ -105,7 +91,7 @@ public:
 					}
 			}
 		}
-		catch(const ORM::Record::not_implemented &e){
+		catch(const tmt::Record::not_implemented &e){
 			for (int i=0;i<c;i++){
 				const char *v=(const char *)sqlite3_column_text(ppStmt, i);
 				r.set(i, v);
@@ -134,11 +120,11 @@ ResultSet *sqlite3_resultset(const std::string &query){
 	return new ResultSetSqlite(query);
 }
 
-void sqlite3_one_step_query(const std::string &query, const ORM::fields_and_values &values){
+void sqlite3_one_step_query(const std::string &query, const tmt::fields_and_values &values){
 	sqlite3_stmt *ppStmt=NULL;
 	int rc=sqlite3_prepare_v2(db, query.c_str(),-1, &ppStmt, NULL);
 	if( rc!=SQLITE_OK ){
-		throw(ORM::invalid_query(query));
+		throw(tmt::invalid_query(query));
 	}
 	
 	if (!values.empty()){
@@ -152,11 +138,11 @@ void sqlite3_one_step_query(const std::string &query, const ORM::fields_and_valu
 
 	rc = sqlite3_step(ppStmt);
 	if (rc!=SQLITE_DONE)
-		throw(ORM::exception(sqlite3_errstr(rc)));
+		throw(tmt::exception(sqlite3_errstr(rc)));
 	sqlite3_free(ppStmt);
 }
 
-void sqlite3_insert(const std::string &table, const ORM::fields_and_values &values){
+void sqlite3_insert(const std::string &table, const tmt::fields_and_values &values){
 	std::stringstream qi, qv;
 	qi<<"INSERT INTO "<<table<<" (id,";
 	int n=values.size();
@@ -175,7 +161,7 @@ void sqlite3_insert(const std::string &table, const ORM::fields_and_values &valu
 }
 
 
-void sqlite3_update(const std::string &table, int id, const ORM::fields_and_values &values){
+void sqlite3_update(const std::string &table, int id, const tmt::fields_and_values &values){
 	std::stringstream qi, qv;
 	qi<<"UPDATE "<<table<<" SET ";
 	int n=values.size();
