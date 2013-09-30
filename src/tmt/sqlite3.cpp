@@ -20,14 +20,13 @@
 #include <sstream>
 #include <iostream>
 
+#include "sqlite3.hpp"
 #include "tmt.hpp"
 #include "resultset.hpp"
 
 namespace tmt{
 	
-sqlite3 *db=NULL;
-
-const char* nullToEmpty( char const* s){
+static const char* nullToEmpty( char const* s){
 	return (s ? s : "");
 }
 
@@ -103,7 +102,7 @@ public:
 	}
 };
 
-void sqlite3_init(const std::string &dbname){
+SQLite::SQLite(const std::string &dbname){
 	int rc = sqlite3_open(dbname.c_str(), &db);
 	if( rc ){
 		fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
@@ -112,15 +111,15 @@ void sqlite3_init(const std::string &dbname){
 	}
 }
 
-void sqlite3_delete(){
+SQLite::~SQLite(){
 	sqlite3_close(db);
 }
 
-ResultSet *sqlite3_resultset(const std::string &query){
+ResultSet *SQLite3::resultset(const std::string &query){
 	return new ResultSetSqlite(query);
 }
 
-void sqlite3_one_step_query(const std::string &query, const tmt::fields_and_values &values){
+int SQLite::query(const std::string& query, const fields_and_values& values){
 	sqlite3_stmt *ppStmt=NULL;
 	int rc=sqlite3_prepare_v2(db, query.c_str(),-1, &ppStmt, NULL);
 	if( rc!=SQLITE_OK ){
@@ -142,49 +141,3 @@ void sqlite3_one_step_query(const std::string &query, const tmt::fields_and_valu
 	sqlite3_free(ppStmt);
 }
 
-void sqlite3_insert(const std::string &table, const tmt::fields_and_values &values){
-	std::stringstream qi, qv;
-	qi<<"INSERT INTO "<<table<<" (id,";
-	int n=values.size();
-	for (auto pair: values){
-		n--;
-		qi<<pair.first;
-		qv<<'?';
-		if (n>0){
-			qi<<", ";
-			qv<<", ";
-		}
-	}
-	qi<<") VALUES ( (SELECT MAX(id)+1 FROM "<<table<<"), "<<qv.str()<<")";
-	
-	sqlite3_one_step_query(qi.str(), values);
-}
-
-
-void sqlite3_update(const std::string &table, int id, const tmt::fields_and_values &values){
-	std::stringstream qi, qv;
-	qi<<"UPDATE "<<table<<" SET ";
-	int n=values.size();
-	for (auto pair: values){
-		n--;
-		qi<<pair.first<<"="<<"?";
-		qv<<'?';
-		if (n>0){
-			qi<<", ";
-			qv<<", ";
-		}
-	}
-	qi<<" WHERE id = "<<id;
-	std::string query=qi.str();
-	
-	sqlite3_one_step_query(qi.str(), values);
-}
-
-void sqlite3_delete(const std::string &table, int id){
-	std::stringstream qi;
-	qi<<"DELETE FROM "<<table<<" WHERE id = "<<id;
-
-	sqlite3_one_step_query(qi.str(), {});
-}
-
-} // namespace

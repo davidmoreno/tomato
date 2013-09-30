@@ -24,6 +24,7 @@
 #include "tmt.hpp"
 #include "queryset.hpp"
 #include "resultset.hpp"
+#include "database.hpp"
 
 namespace tmt{
 	class QuerySetBase::QuerySetPrivate{
@@ -33,7 +34,6 @@ namespace tmt{
 			std::string prepared;
 			std::string table;
 	};
-	ResultSet *sqlite3_resultset(const std::string &query);
 }
 
 using namespace tmt;
@@ -114,7 +114,7 @@ ResultSet *QuerySetBase::prepare()
 	sql<<";";
 	p->prepared=sql.str();
 	
-	return sqlite3_resultset(p->prepared);
+	return Database::singleton()->resultset(p->prepared);
 }
 
 int QuerySetBase::count()

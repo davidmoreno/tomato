@@ -15,29 +15,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #pragma once
 
 #include <string>
-#include <memory>
-#include <iterator>
-#include <vector>
+#include "database.hpp"
+
+typedef struct sqlite3;
 
 namespace tmt{
-	class exception : public std::exception{
-		std::string str;
+	class SQLite : public Database{
+	private:
+		sqlite3 *db;
 	public:
-		exception(const std::string &s) : str(s){}
-		const char *what() const throw(){ return str.c_str(); }
+		SQLite(const std::string &init);
+		~SQLite();
+		
+		int insert(const std::string &table, const fields_and_values &values);
+		void save(const std::string &table, const fields_and_values &values);
+		void update(const std::string &table, int id, const fields_and_values &values);
+		void del(const std::string &table, int id);
+		
+		int query(const std::string &query, const tmt::fields_and_values &values);
 	};
-
-#define ADD_EXCEPTION(NAME, STR) \
-	class NAME : public exception{ \
-	public: \
-		NAME(const std::string& s) : exception(STR+s) {}; \
-	};
-	
-	ADD_EXCEPTION(invalid_query, "invalid query: ");
-	ADD_EXCEPTION(initialization_exception, "initialization exception: ");
-	ADD_EXCEPTION(does_not_exist, "does_not_exist: ");
-	ADD_EXCEPTION(not_unique, "more than one records with that requirements: ");
 };

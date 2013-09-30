@@ -15,43 +15,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <string>
-#include <vector>
-#include <sstream>
-#include <iostream>
-#include <memory>
-
 #include "tmt.hpp"
+#include "sqlite3.hpp"
 
-namespace tmt{
-	void sqlite3_init(const std::string &dbname);
-	void sqlite3_delete();
-	void sqlite3_insert(const std::string &table, const fields_and_values &values);
-	void sqlite3_update(const std::string &table, int id, const fields_and_values &values);
-	void sqlite3_delete(const std::string &table, int id);
-}
 
 using namespace tmt;
 
-
-
 void tmt::init(const std::string &dbname)
 {
-	sqlite3_init(dbname);
+	new SQLite(dbname);
 }
 
 void tmt::free()
 {
-	sqlite3_delete();
-}
-
-void tmt::insert(const std::string &table, const fields_and_values &values){
-	sqlite3_insert(table, values);
-}
-void tmt::save(const std::string &table, int id, const fields_and_values &values){
-	sqlite3_update(table, id, values);
-}
-
-void tmt::del(const std::string &table, int id){
-	sqlite3_delete(table, id);
+	delete Database::singleton();
 }

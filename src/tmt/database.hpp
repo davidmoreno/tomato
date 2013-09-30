@@ -15,29 +15,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #pragma once
 
 #include <string>
-#include <memory>
-#include <iterator>
 #include <vector>
 
 namespace tmt{
-	class exception : public std::exception{
-		std::string str;
-	public:
-		exception(const std::string &s) : str(s){}
-		const char *what() const throw(){ return str.c_str(); }
-	};
-
-#define ADD_EXCEPTION(NAME, STR) \
-	class NAME : public exception{ \
-	public: \
-		NAME(const std::string& s) : exception(STR+s) {}; \
-	};
+	using fields_and_values = std::vector<std::pair<std::string, std::string>>;
 	
-	ADD_EXCEPTION(invalid_query, "invalid query: ");
-	ADD_EXCEPTION(initialization_exception, "initialization exception: ");
-	ADD_EXCEPTION(does_not_exist, "does_not_exist: ");
-	ADD_EXCEPTION(not_unique, "more than one records with that requirements: ");
+	class ResultSet;
+	
+	class Database{
+	private:
+		static Database *_singleton;
+	public:
+		Database();
+		virtual ~Database();
+		
+		virtual int insert(const std::string &table, const fields_and_values &values);
+		virtual void save(const std::string &table, const fields_and_values &values);
+		virtual void update(const std::string &table, int id, const fields_and_values &values);
+		virtual void del(const std::string &table, int id);
+		virtual ResultSet *resultset(const std::string &query)=0;
+		int query(const std::string &query, const tmt::fields_and_values &values)=0;
+		
+		static Database *singleton(){ return _singleton; }
+	};
 };
