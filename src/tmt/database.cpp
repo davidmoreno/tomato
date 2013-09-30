@@ -19,13 +19,16 @@
 #include <sstream>
 
 #include "database.hpp"
+#include "tmt.hpp"
 
 using namespace tmt;
+
+Database *Database::_singleton=nullptr;
 
 Database::Database()
 {
 	if (_singleton)
-		throw(tmt::exception("Singleton already exists. Trying to initialize datbase twice.");
+		throw(tmt::initialization_exception("Singleton already exists. Trying to initialize datbase twice."));
 	_singleton=this;
 }
 
@@ -55,7 +58,7 @@ int Database::insert(const std::string& table, const fields_and_values& values){
 }
 
 
-void Database::update(const std::string &table, int id, const tmt::fields_and_values &values){
+void Database::save(const std::string &table, int id, const tmt::fields_and_values &values){
 	std::stringstream qi, qv;
 	qi<<"UPDATE "<<table<<" SET ";
 	int n=values.size();
@@ -69,8 +72,6 @@ void Database::update(const std::string &table, int id, const tmt::fields_and_va
 		}
 	}
 	qi<<" WHERE id = "<<id;
-	std::string query=qi.str();
-	
 	query(qi.str(), values);
 }
 
@@ -78,5 +79,18 @@ void Database::del(const std::string &table, int id){
 	std::stringstream qi;
 	qi<<"DELETE FROM "<<table<<" WHERE id = "<<id;
 
+	query(qi.str(), {});
+}
+
+void Database::create_table(const std::string& table_name, const fields_types& fieldstypes)
+{
+	std::stringstream qi;
+	
+	qi<<"CREATE TABLE "<<table_name<<"(id INTEGER";
+	for(auto &ft:fieldstypes){
+		qi<<", "<<ft.first<<" "<<ft.second;
+	}
+	qi<<");";
+	
 	query(qi.str(), {});
 }

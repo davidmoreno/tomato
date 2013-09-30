@@ -29,55 +29,42 @@ namespace tmt{
 		int id=0;
 
 		// Must reimplement
-		virtual fields_and_refs field_map_ref()=0;
+		virtual fields_and_refs field_refs()=0;
 		virtual const char *table_name()=0;
-
 		
-		class not_implemented : public std::exception{};
-		virtual void set(
-				int n,
-				const std::string &a
-			){ throw not_implemented(); };
-		virtual void set(
-				const std::string &a
-			){ throw not_implemented(); };
-		virtual void set(
-				const std::string &a, const std::string &b
-			){ throw not_implemented(); };
-		virtual void set(
-				const std::string &a, const std::string &b, const std::string &c
-			){ throw not_implemented(); };
-		virtual void set(
-				const std::string &a, const std::string &b, const std::string &c,
-				const std::string &d
-			){ throw not_implemented(); };
-		virtual void set(
-				const std::string &a, const std::string &b, const std::string &c,
-				const std::string &d, const std::string &e
-			){ throw not_implemented(); };
-		virtual void set(
-				const std::string &a, const std::string &b, const std::string &c,
-				const std::string &d, const std::string &e, const std::string &f
-			){ throw not_implemented(); };
-			
-		virtual fields_and_values field_map_val(){
-			std::vector<std::tuple<std::string, std::string &>> ref{field_map_ref()};
+		virtual fields_and_values field_vals(){
+			auto ref=field_refs();
 			fields_and_values ret;
 			for(auto f: ref){
-				ret.push_back({f.get<0>(), f.get<1>()});
+				ret.push_back({f.first, f.second});
+			}
+			return ret;
+		};
+		virtual fields_types field_types(){
+			auto ref=field_refs();
+			fields_types ret;
+			for(auto f: ref){
+				ret.push_back({f.first, "TEXT"});
 			}
 			return ret;
 		};
 		virtual void save(){
+			auto fv=field_vals();
 			if (id==0){
-				tmt::Database::singleton()->insert(table_name(), field_map_val());
+				id=tmt::Database::singleton()->insert(table_name(), fv);
 			}
 			else{
-				tmt::Database::singleton()->save("users", id, field_map_val());
+				tmt::Database::singleton()->save("users", id, fv);
 			}
 		};
 		virtual void del(){
 			tmt::Database::singleton()->del("users", id);
+		}
+		
+		template<typename T>
+		static void create_table(){
+			T record; //Sorry must rete one. Be ready for phony records.
+			tmt::Database::singleton()->create_table(record.table_name(), record.field_types());
 		}
 		
 	};

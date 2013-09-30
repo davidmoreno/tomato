@@ -21,21 +21,17 @@
 #include <string>
 #include "database.hpp"
 
-typedef struct sqlite3;
+typedef struct sqlite3 sqlite3;
 
 namespace tmt{
-	class SQLite : public Database{
-	private:
-		sqlite3 *db;
+	class SQLite3 : public Database{
 	public:
-		SQLite(const std::string &init);
-		~SQLite();
+		sqlite3 *db;
 		
-		int insert(const std::string &table, const fields_and_values &values);
-		void save(const std::string &table, const fields_and_values &values);
-		void update(const std::string &table, int id, const fields_and_values &values);
-		void del(const std::string &table, int id);
-		
+		SQLite3(const std::string &init);
+		~SQLite3();
+
+		ResultSet *resultset(const std::string &query);
 		int query(const std::string &query, const tmt::fields_and_values &values);
 	};
 };

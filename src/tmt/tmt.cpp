@@ -19,14 +19,16 @@
 #include "sqlite3.hpp"
 
 
-using namespace tmt;
+namespace tmt{
 
-void tmt::init(const std::string &dbname)
-{
-	new SQLite(dbname);
-}
+	void init(const std::string &dbname)
+	{
+		new SQLite3(dbname);
+	}
 
-void tmt::free()
-{
-	delete Database::singleton();
+	void free()
+	{
+		delete Database::singleton();
+	}
+
 }

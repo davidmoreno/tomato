@@ -23,6 +23,9 @@
 #include <vector>
 
 namespace tmt{
+	void init(const std::string &dbname);
+	void free();
+	
 	class exception : public std::exception{
 		std::string str;
 	public:
@@ -40,4 +43,5 @@ namespace tmt{
 	ADD_EXCEPTION(initialization_exception, "initialization exception: ");
 	ADD_EXCEPTION(does_not_exist, "does_not_exist: ");
 	ADD_EXCEPTION(not_unique, "more than one records with that requirements: ");
+	ADD_EXCEPTION(invalid_count_of_columns, "Invalid count of columns reading from database. Check schema. ");
 };

@@ -29,10 +29,13 @@ int main(int argc, char **argv){
 	tmt::init("users.sqlite");
 	
 	if (argc<2){
-		cout<<"users <list|add|del|edit>\n";
+		cout<<"users <syncdb|list|add|del|edit>\n";
 		return 1;
 	}
 	std::string command{argv[1]};
+	if (command=="syncdb"){
+		User::create_table<User>();
+	}
 	if (command=="list"){
 		if (argc==3){
 			auto u=User::objects.get("id",argv[2]);

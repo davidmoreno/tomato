@@ -25,7 +25,11 @@
 #include "resultset.hpp"
 
 namespace tmt{
-	
+	class SQLite3;
+}
+
+using namespace tmt;
+
 static const char* nullToEmpty( char const* s){
 	return (s ? s : "");
 }
@@ -35,9 +39,9 @@ class ResultSetSqlite : public ResultSet{
 	sqlite3_stmt *ppStmt;
 	bool _atend;
 public:
-	ResultSetSqlite(const std::string &query) : _atend(false){
+	ResultSetSqlite(SQLite3 *sqlite, const std::string &query) : _atend(false){
 		ppStmt=NULL;
-		int rc=sqlite3_prepare_v2(db, query.c_str(),-1, &ppStmt, NULL);
+		int rc=sqlite3_prepare_v2(sqlite->db, query.c_str(),-1, &ppStmt, NULL);
 		if( rc!=SQLITE_OK ){
 			throw(tmt::invalid_query(query));
 		}
@@ -55,46 +59,15 @@ public:
 			return;
 		}
 		int c=sqlite3_column_count(ppStmt);
-		try{
-			switch(c){
-				case 0:
-					break;
-				case 1:
-					r.set(nullToEmpty((const char *)sqlite3_column_text(ppStmt, 0)));
-					break;
-				case 2:
-					r.set(nullToEmpty((const char *)sqlite3_column_text(ppStmt, 0)),nullToEmpty((const char *)sqlite3_column_text(ppStmt, 1)));
-					break;
-				case 3:
-					r.set(nullToEmpty((const char *)sqlite3_column_text(ppStmt, 0)),nullToEmpty((const char *)sqlite3_column_text(ppStmt, 1)),
-								nullToEmpty((const char *)sqlite3_column_text(ppStmt, 2)));
-					break;
-				case 4:
-					r.set(nullToEmpty((const char *)sqlite3_column_text(ppStmt, 0)),nullToEmpty((const char *)sqlite3_column_text(ppStmt, 1)),
-								nullToEmpty((const char *)sqlite3_column_text(ppStmt, 2)),nullToEmpty((const char *)sqlite3_column_text(ppStmt, 3)));
-					break;
-				case 5:
-					r.set(nullToEmpty((const char *)sqlite3_column_text(ppStmt, 0)),nullToEmpty((const char *)sqlite3_column_text(ppStmt, 1)),
-								nullToEmpty((const char *)sqlite3_column_text(ppStmt, 2)),nullToEmpty((const char *)sqlite3_column_text(ppStmt, 3)),
-								nullToEmpty((const char *)sqlite3_column_text(ppStmt, 4)));
-					break;
-				case 6:
-					r.set(nullToEmpty((const char *)sqlite3_column_text(ppStmt, 0)),nullToEmpty((const char *)sqlite3_column_text(ppStmt, 1)),
-								nullToEmpty((const char *)sqlite3_column_text(ppStmt, 2)),nullToEmpty((const char *)sqlite3_column_text(ppStmt, 3)),
-								nullToEmpty((const char *)sqlite3_column_text(ppStmt, 4)),nullToEmpty((const char *)sqlite3_column_text(ppStmt, 5)));
-					break;
-			default:
-					for (int i=0;i<c;i++){
-						const char *v=(const char *)sqlite3_column_text(ppStmt, i);
-						r.set(i, v);
-					}
-			}
-		}
-		catch(const tmt::Record::not_implemented &e){
-			for (int i=0;i<c;i++){
-				const char *v=(const char *)sqlite3_column_text(ppStmt, i);
-				r.set(i, v);
-			}
+		fields_and_refs fields=r.field_refs();
+		
+		if (c!=fields.size()+1)
+			throw(tmt::invalid_count_of_columns(std::string("Required ")+std::to_string(fields.size())+std::string(", but was ")+std::to_string(c)));
+		
+		r.id=sqlite3_column_int(ppStmt, 0);
+		
+		for (int i=1;i<c;i++){
+			fields[i].second=nullToEmpty((const char *)sqlite3_column_text(ppStmt, i));
 		}
 	}
 	bool atend() const{
@@ -102,24 +75,22 @@ public:
 	}
 };
 
-SQLite::SQLite(const std::string &dbname){
+SQLite3::SQLite3(const std::string &dbname){
 	int rc = sqlite3_open(dbname.c_str(), &db);
 	if( rc ){
-		fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
-		sqlite3_close(db);
-		throw(std::exception());
+		throw(tmt::initialization_exception(std::string("Can't open database: ")+sqlite3_errmsg(db)));
 	}
 }
 
-SQLite::~SQLite(){
+SQLite3::~SQLite3(){
 	sqlite3_close(db);
 }
 
 ResultSet *SQLite3::resultset(const std::string &query){
-	return new ResultSetSqlite(query);
+	return new ResultSetSqlite(this, query);
 }
 
-int SQLite::query(const std::string& query, const fields_and_values& values){
+int SQLite3::query(const std::string& query, const fields_and_values& values){
 	sqlite3_stmt *ppStmt=NULL;
 	int rc=sqlite3_prepare_v2(db, query.c_str(),-1, &ppStmt, NULL);
 	if( rc!=SQLITE_OK ){

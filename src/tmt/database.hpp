@@ -24,6 +24,7 @@
 namespace tmt{
 	using fields_and_values = std::vector<std::pair<std::string, std::string>>;
 	using fields_and_refs = std::vector<std::pair<std::string, std::string&>>;
+	using fields_types = std::vector<std::pair<std::string, std::string>>;
 	
 	class ResultSet;
 	
@@ -35,11 +36,11 @@ namespace tmt{
 		virtual ~Database();
 		
 		virtual int insert(const std::string &table, const fields_and_values &values);
-		virtual void save(const std::string &table, const fields_and_values &values);
-		virtual void update(const std::string &table, int id, const fields_and_values &values);
+		virtual void save(const std::string &table, int id, const fields_and_values &values);
 		virtual void del(const std::string &table, int id);
 		virtual ResultSet *resultset(const std::string &query)=0;
-		int query(const std::string &query, const tmt::fields_and_values &values)=0;
+		virtual int query(const std::string &query, const tmt::fields_and_values &values)=0;
+		virtual void create_table(const std::string &table_name, const fields_types &fieldstypes);
 		
 		static Database *singleton(){ return _singleton; }
 	};

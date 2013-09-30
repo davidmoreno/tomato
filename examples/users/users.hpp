@@ -21,6 +21,7 @@
 #include <tmt/queryset.hpp>
 #include <tmt/database.hpp>
 
+
 class User : public tmt::Record{
 public:
 	std::string username;
@@ -38,10 +39,10 @@ public:
 		this->password=password;
 	};
 	
-	fields_and_refs field_map_ref(){
+	tmt::fields_and_refs field_refs(){
 		return { 
-			{ "users", &username },
-			{ "password", &password }
+			{ "users", username },
+			{ "password", password }
 		};
 	}
 	
