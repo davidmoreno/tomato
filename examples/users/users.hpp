@@ -19,6 +19,7 @@
 
 #include <tmt/record.hpp>
 #include <tmt/queryset.hpp>
+#include <tmt/database.hpp>
 
 class User : public tmt::Record{
 public:
@@ -40,14 +41,14 @@ public:
 	
 	virtual void save(){
 		if (id==0){
-			tmt::insert("users", {{"name",username}, {{"password"},password}});
+			tmt::Database::singleton()->insert("users", {{"name",username}, {{"password"},password}});
 		}
 		else{
-			tmt::save("users", id, {{"name",username}, {{"password"},password}});
+			tmt::Database::singleton()->save("users", id, {{"name",username}, {{"password"},password}});
 		}
 	};
 	virtual void del(){
-		tmt::del("users", id);
+		tmt::Database::singleton()->del("users", id);
 	}
 };
 

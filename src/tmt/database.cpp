@@ -80,5 +80,3 @@ void Database::del(const std::string &table, int id){
 
 	query(qi.str(), {});
 }
-
-} // namespace
