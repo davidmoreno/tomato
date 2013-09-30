@@ -23,7 +23,6 @@
 
 class User : public tmt::Record{
 public:
-	int id=0;
 	std::string username;
 	std::string password;
 
@@ -39,17 +38,14 @@ public:
 		this->password=password;
 	};
 	
-	virtual void save(){
-		if (id==0){
-			tmt::Database::singleton()->insert("users", {{"name",username}, {{"password"},password}});
-		}
-		else{
-			tmt::Database::singleton()->save("users", id, {{"name",username}, {{"password"},password}});
-		}
-	};
-	virtual void del(){
-		tmt::Database::singleton()->del("users", id);
+	fields_and_refs field_map_ref(){
+		return { 
+			{ "users", &username },
+			{ "password", &password }
+		};
 	}
+	
+	virtual const char *table_name(){ return "users"; }
 };
 
 inline static std::ostream &operator<<(std::ostream &o, const User &u){

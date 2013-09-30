@@ -23,6 +23,7 @@
 
 namespace tmt{
 	using fields_and_values = std::vector<std::pair<std::string, std::string>>;
+	using fields_and_refs = std::vector<std::pair<std::string, std::string&>>;
 	
 	class ResultSet;
 	
