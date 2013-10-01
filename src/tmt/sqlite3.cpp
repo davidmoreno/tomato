@@ -110,7 +110,7 @@ int SQLite3::query(const std::string& query, const fields_and_values& values){
 	rc = sqlite3_step(ppStmt);
 	if (rc!=SQLITE_DONE)
 		throw(tmt::exception(sqlite3_errstr(rc)));
-	sqlite3_free(ppStmt);
+	sqlite3_finalize(ppStmt);
 	
 	return sqlite3_last_insert_rowid(db);
 }

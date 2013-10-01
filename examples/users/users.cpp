@@ -18,6 +18,7 @@
 
 #include <tmt/tmt.hpp>
 #include <iostream>
+#include <stdlib.h>
 
 #include "users.hpp"
 
@@ -27,6 +28,7 @@ tmt::QuerySet<User> User::objects("users");
 
 int main(int argc, char **argv){
 	tmt::init("users.sqlite");
+	atexit(tmt::free);
 	
 	if (argc<2){
 		cout<<"users <syncdb|list|add|del|edit>\n";
@@ -50,6 +52,7 @@ int main(int argc, char **argv){
 	if (command=="add"){
 		if (argc!=4){
 			cout<<"users add <username> <password>"<<endl;
+			return -1;
 		}
 		User u;
 		u.username=argv[2];
