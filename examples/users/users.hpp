@@ -27,17 +27,12 @@ public:
 	std::string username;
 	std::string password;
 
+	const char *table_name(){ return "users"; }
 	bool operator==(const User &other) const{
 		return id==other.id && username==other.username && password==other.password;
 	}
 	
 	static tmt::QuerySet<User> objects;
-	
-	virtual void set(const std::string &id, const std::string &username, const std::string &password){
-		this->id=atoi(id.c_str());
-		this->username=username;
-		this->password=password;
-	};
 	
 	tmt::fields_and_refs field_refs(){
 		return { 
@@ -46,7 +41,6 @@ public:
 		};
 	}
 	
-	virtual const char *table_name(){ return "users"; }
 };
 
 inline static std::ostream &operator<<(std::ostream &o, const User &u){

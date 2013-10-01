@@ -66,8 +66,9 @@ public:
 		
 		r.id=sqlite3_column_int(ppStmt, 0);
 		
-		for (int i=1;i<c;i++){
-			fields[i].second=nullToEmpty((const char *)sqlite3_column_text(ppStmt, i));
+		for (int i=0;i<c-1;i++){
+// 			printf("Field %d, %p\n", i, &fields[i].second);
+			fields[i].second=nullToEmpty((const char *)sqlite3_column_text(ppStmt, i+1));
 		}
 	}
 	bool atend() const{
@@ -110,5 +111,7 @@ int SQLite3::query(const std::string& query, const fields_and_values& values){
 	if (rc!=SQLITE_DONE)
 		throw(tmt::exception(sqlite3_errstr(rc)));
 	sqlite3_free(ppStmt);
+	
+	return sqlite3_last_insert_rowid(db);
 }
 

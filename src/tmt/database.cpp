@@ -50,11 +50,9 @@ int Database::insert(const std::string& table, const fields_and_values& values){
 			qv<<", ";
 		}
 	}
-	qi<<") VALUES ( (SELECT MAX(id)+1 FROM "<<table<<"), "<<qv.str()<<")";
+	qi<<") VALUES (NULL, "<<qv.str()<<")";
 	
-	query(qi.str(), values);
-	
-	return -1;
+	return query(qi.str(), values);
 }
 
 
@@ -86,7 +84,7 @@ void Database::create_table(const std::string& table_name, const fields_types& f
 {
 	std::stringstream qi;
 	
-	qi<<"CREATE TABLE "<<table_name<<"(id INTEGER";
+	qi<<"CREATE TABLE "<<table_name<<"(id INTEGER PRIMARY KEY AUTOINCREMENT";
 	for(auto &ft:fieldstypes){
 		qi<<", "<<ft.first<<" "<<ft.second;
 	}
