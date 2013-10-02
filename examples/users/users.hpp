@@ -24,12 +24,17 @@
 
 class User : public tmt::Model{
 public:
+	static Meta *_meta;
+	
 	std::string username;
 	std::string password;
 
-	const char *table_name(){ return "users"; }
 	bool operator==(const User &other) const{
 		return id==other.id && username==other.username && password==other.password;
+	}
+	
+	Meta* meta(){
+		return User::_meta;
 	}
 	
 	static tmt::QuerySet<User> objects;

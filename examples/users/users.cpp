@@ -24,7 +24,13 @@
 
 using namespace std;
 
-tmt::QuerySet<User> User::objects("users");
+tmt::Model::Meta *User::_meta=new tmt::Model::Meta("user", "user", 
+	{ 
+		tmt::Text("username"),
+		tmt::Text("password"),
+		tmt::ForeignKey("referer", "user")
+	});
+tmt::QuerySet<User> User::objects("user");
 
 int main(int argc, char **argv){
 	tmt::init("users.sqlite");

@@ -27,6 +27,7 @@ namespace tmt{
 	using fields_types = std::vector<std::pair<std::string, std::string>>;
 	
 	class ResultSet;
+	class Field;
 	
 	class Database{
 	private:
@@ -40,7 +41,7 @@ namespace tmt{
 		virtual void del(const std::string &table, int id);
 		virtual ResultSet *resultset(const std::string &query)=0;
 		virtual int query(const std::string &query, const tmt::fields_and_values &values)=0;
-		virtual void create_table(const std::string &table_name, const fields_types &fieldstypes);
+		virtual void create_table(const std::string &table_name, const std::vector<Field> &fieldstypes);
 		
 		static Database *singleton(){ return _singleton; }
 	};

@@ -19,6 +19,7 @@
 #include <sstream>
 
 #include "database.hpp"
+#include "model.hpp"
 #include "tmt.hpp"
 
 using namespace tmt;
@@ -80,13 +81,17 @@ void Database::del(const std::string &table, int id){
 	query(qi.str(), {});
 }
 
-void Database::create_table(const std::string& table_name, const fields_types& fieldstypes)
+void Database::create_table(const std::string& table_name, const std::vector<Field>& fieldstypes)
 {
 	std::stringstream qi;
 	
 	qi<<"CREATE TABLE "<<table_name<<"(id INTEGER PRIMARY KEY AUTOINCREMENT";
 	for(auto &ft:fieldstypes){
-		qi<<", "<<ft.first<<" "<<ft.second;
+		qi<<", "<<ft.name<<" "<<ft.sql_type;
+	}
+	for(auto &ft:fieldstypes){
+		if (!ft.extra_at_create.empty())
+			qi<<", "<<ft.extra_at_create;
 	}
 	qi<<");";
 	

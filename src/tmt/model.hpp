@@ -21,30 +21,34 @@
 #include <string>
 #include <vector>
 #include <tuple>
+
 #include "database.hpp"
+#include "fields.hpp"
 
 namespace tmt{
 	class Model{
 	public:
+		class Meta{
+		public:
+			const char *model_name;
+			const char *table_name;
+			
+			std::vector<Field> fields;
+			
+			Meta(const char *model_name, const char *table_name, const std::vector<Field> &fields) : model_name(model_name), table_name(table_name), fields(fields){}
+		};
 		int id=0;
 
+		const char *table_name(){ return meta()->table_name; }
 		// Must reimplement
 		virtual fields_and_refs field_refs()=0;
-		virtual const char *table_name()=0;
+		virtual Meta *meta()=0;
 		
 		virtual fields_and_values field_vals(){
 			auto ref=field_refs();
 			fields_and_values ret;
 			for(auto f: ref){
 				ret.push_back({f.first, f.second});
-			}
-			return ret;
-		};
-		virtual fields_types field_types(){
-			auto ref=field_refs();
-			fields_types ret;
-			for(auto f: ref){
-				ret.push_back({f.first, "TEXT"});
 			}
 			return ret;
 		};
@@ -63,9 +67,9 @@ namespace tmt{
 		
 		template<typename T>
 		static void create_table(){
-			T record; //Sorry must rete one. Be ready for phony records.
-			tmt::Database::singleton()->create_table(record.table_name(), record.field_types());
+			tmt::Database::singleton()->create_table(T::_meta->table_name, T::_meta->fields);
 		}
 		
 	};
+	
 }
