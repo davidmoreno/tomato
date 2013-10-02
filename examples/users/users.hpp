@@ -17,12 +17,12 @@
  */
 #pragma once
 
-#include <tmt/record.hpp>
+#include <tmt/model.hpp>
 #include <tmt/queryset.hpp>
 #include <tmt/database.hpp>
 
 
-class User : public tmt::Record{
+class User : public tmt::Model{
 public:
 	std::string username;
 	std::string password;

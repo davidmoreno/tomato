@@ -17,14 +17,14 @@
  */
 #pragma once
 
-#include "record.hpp"
+#include "model.hpp"
 
 namespace tmt{
 	class ResultSet{
 	public:
 		virtual ~ResultSet(){}
 		
-		virtual void next(Record &r) = 0;
+		virtual void next(Model &r) = 0;
 		virtual bool atend() const = 0;
 	};
 }

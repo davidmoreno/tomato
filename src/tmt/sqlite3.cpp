@@ -50,7 +50,7 @@ public:
 	~ResultSetSqlite(){
 		sqlite3_finalize(ppStmt);
 	}
-	void next(Record &r){
+	void next(Model &r){
 		if (_atend)
 			return;
 		auto rc = sqlite3_step(ppStmt);

@@ -24,7 +24,7 @@
 #include "database.hpp"
 
 namespace tmt{
-	class Record{
+	class Model{
 	public:
 		int id=0;
 
